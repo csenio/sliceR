@@ -5,7 +5,9 @@
 }
 
 canvas{
-    border: 1px solid red;
+    /* border: 1px solid red; */
+    /* background: #0a182d; */
+    background: #061121;
 }
 
 body{
