@@ -121,6 +121,7 @@ function slicer(){
             // console.log(yspeed)
             player.y-= yspeed
         }
+        tail({x:player.x,y:player.y})
         player.skill = undefined
         target.x = mouse.x;
         target.y = mouse.y;
@@ -184,7 +185,7 @@ if(zombie.y > player.y){
 }
 
 
-let currentpos = {x:0,y:0}
+let currentpos = {x:undefined,y:undefined}
 
 
 if(player.x < target.x){
@@ -206,6 +207,10 @@ if(player.y > target.y){
     // console.log(updownspeed)
     player.y-= updownspeed
     currentpos.y = player.y
+}
+
+function moveTo(item,target){
+    
 }
 
 tail(currentpos)
