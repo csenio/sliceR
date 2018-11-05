@@ -17,8 +17,8 @@ window.addEventListener('keyup',function(e){
 function getMousePos(canvas, evt) {
     var rect = canvas.getBoundingClientRect();
     return {
-      x: evt.clientX - rect.left,
-      y: evt.clientY - rect.top
+      x: evt.clientX,
+      y: evt.clientY
     };
   }
 
@@ -38,7 +38,9 @@ function getMousePos(canvas, evt) {
     width: 40,
     height: 40,
     life: 9,
-    speed: 8,
+    speed:20,
+    tail: [],
+    skill: undefined
 }
 
   var updownspeed = 1
@@ -46,10 +48,11 @@ function getMousePos(canvas, evt) {
   document.addEventListener('click', function(){
       target.x = mouse.x;
       target.y = mouse.y;
-      updownspeed = Math.sqrt(Math.pow(player.x-target.x,2))/Math.sqrt(Math.pow(player.y-target.y,2)) * 150
-      leftrightspeed = 150
-    //   updownspeed = Math.sqrt(Math.pow(player.x-target.x,2))
-    //   leftrightspeed = Math.sqrt(Math.pow(player.y-target.y,2))
+      let a = Math.abs(player.x-target.x)
+      let b = Math.abs(player.y-target.y)
+      let c = Math.sqrt(Math.pow(a,2)+Math.pow(b,2))
+    leftrightspeed = (a/c) * player.speed
+    updownspeed = (b/c) * player.speed
   })
 
   document.addEventListener('mousemove', function(evt) {
@@ -58,18 +61,72 @@ function getMousePos(canvas, evt) {
     mouse.y= mousePos.y;
   }, false);
 
-  var jumpdistance = 400
 
-//   document.addEventListener('click', function(){
-//       player.x += (mouse.x - player.x)*50/ Math.sqrt( Math.pow((mouse.x - player.x), 2) + Math.pow((mouse.y - player.y), 2)) 
-//       player.y += (mouse.y - player.y)*50/ Math.sqrt( Math.pow((mouse.y - player.y), 2) + Math.pow((mouse.x - player.x), 2)) 
-//       if(player.x > canvas.width-player.width){ player.x=canvas.width-player.width }
-//       if(player.x < 0){ player.x=0 }
-//       if(player.y > canvas.height-player.height){ player.y=canvas.height-player.height }
-//       if(player.y < 0){ player.y=0 }
-//   })
+document.addEventListener('keydown',function(e){
+    if(e.keyCode == '32'){
+        player.skill = 'charge'
+        console.log(player.skill)
+    }
+})
+document.addEventListener('keyup',function(e){
+    if(e.keyCode == '32'){
+        player.skill = 'slice'
+        console.log(player.skill)
+    }
+})
 
 
+function slicer(){
+    if(player.skill == 'charge'){
+        c.save()
+        c.lineWidth = 30
+        c.shadowColor = 'white'
+        c.shadowBlur = '20'
+        c.strokeStyle = 'rgba(255,255,255,0.2)'
+        c.beginPath()
+        c.moveTo(mouse.x,mouse.y)
+        c.lineTo(player.x,player.y)
+        c.stroke()
+        c.moveTo(player.x,player.y)
+        c.strokeStyle = 'rgba(255,255,255,0.8)'
+        c.lineWidth = 5
+        c.lineTo(mouse.x, mouse.y)
+        c.stroke()
+        c.beginPath()
+        c.fillStyle = 'white'
+        c.arc(mouse.x,mouse.y,15,0,Math.PI*2)
+        c.fill()
+        c.restore()
+    }
+    if(player.skill == 'slice'){
+        let aa = Math.abs(player.x-mouse.x)
+        let bb = Math.abs(player.y-mouse.y)
+        let cc = Math.sqrt(Math.pow(aa,2)+Math.pow(bb,2))
+        xspeed = (aa/cc) * cc
+        yspeed = (bb/cc) * cc
+
+        if(player.x < mouse.x){
+            // console.log(updownspeed)
+            player.x += xspeed
+        }
+        if(player.x > mouse.x){
+            // console.log(xspeed)
+            player.x-= xspeed
+        }
+        if(player.y < mouse.y){    
+            // console.log(leftrightspeed)
+            player.y+= yspeed
+        }
+        if(player.y > mouse.y){
+            // console.log(yspeed)
+            player.y-= yspeed
+        }
+        player.skill = undefined
+        target.x = mouse.x;
+        target.y = mouse.y;
+        player.tail = []
+    }
+}
 
 var zombie = {
     x: 200,
@@ -84,42 +141,16 @@ function animate(){
 requestAnimationFrame(animate);
 c.clearRect(0,0,window.innerWidth,window.innerHeight)
 
-// console.log(mouse)
-// document.addEventListener('keydown', function(event) {
-//     if(event.keyCode == 37) {
-//         // Move ('left');
-//     }
-// })
 
-c.beginPath()
-c.moveTo(mouse.x,mouse.y)
-c.lineTo(player.x,player.y)
-c.stroke()
+// c.beginPath()
+// c.moveTo(mouse.x,mouse.y)
+// c.lineTo(player.x,player.y)
+// c.stroke()
+
+slicer()
 
 
 
-
-
-
-
-
-if(keyState[37] || keyState[65]) {
-    // console.log('left')
-    if(player.x>0) player.x-=player.speed
-
-}
-if(keyState[39] || keyState[68]) {
-    // console.log('right')
-    if(player.x<canvas.width-player.width) player.x+=player.speed
-}
-if(keyState[38] || keyState[87]) {
-    // console.log('up')
-    if(player.y > 0) player.y-=player.speed
-}
-if(keyState[40] || keyState[83]) {
-    // console.log('down')
-    if(player.y < canvas.height - player.height) player.y+=player.speed
-}
 
 c.fillStyle = "black"
 // console.log(player.x, player.y)
@@ -133,42 +164,82 @@ c.strokeStyle = "white";
 c.fillStyle = "white"
 c.stroke()
 c.fill()
+c.restore()
 c.fillStyle = "green"
-// c.fillRect(zombie.x,zombie.y,zombie.height,zombie.width)
+c.fillRect(zombie.x,zombie.y,zombie.height,zombie.width)
+
 
 
 if(zombie.x < player.x){
-    zombie.x+= zombie.speed
+    zombie.x+= Math.abs(zombie.x-target.x) / Math.sqrt(Math.pow(Math.abs(zombie.x-target.x),2)+Math.pow(Math.abs(zombie.y-target.y),2)) * zombie.speed
 }
 if(zombie.x > player.x){
-    zombie.x-= zombie.speed
+    zombie.x-= Math.abs(zombie.x-target.x) / Math.sqrt(Math.pow(Math.abs(zombie.x-target.x),2)+Math.pow(Math.abs(zombie.y-target.y),2)) * zombie.speed
 }
 if(zombie.y < player.y){
-    zombie.y+= zombie.speed
+    zombie.y+= Math.abs(zombie.y-target.y) / Math.sqrt(Math.pow(Math.abs(zombie.x-target.x),2)+Math.pow(Math.abs(zombie.y-target.y),2)) * zombie.speed
 }
 if(zombie.y > player.y){
-    zombie.y-= zombie.speed
+    zombie.y-= Math.abs(zombie.y-target.y) / Math.sqrt(Math.pow(Math.abs(zombie.x-target.x),2)+Math.pow(Math.abs(zombie.y-target.y),2)) * zombie.speed
 }
 
+
+let currentpos = {x:0,y:0}
 
 
 if(player.x < target.x){
-    console.log(updownspeed/20)
-    player.x += updownspeed/20
+    // console.log(updownspeed)
+    player.x += leftrightspeed
+    currentpos.x = player.x
 }
 if(player.x > target.x){
-    console.log(updownspeed/20)
-    player.x-= updownspeed/20
+    // console.log(leftrightspeed)
+    player.x-= leftrightspeed
+    currentpos.x = player.x
 }
-if(player.y < target.y){
-    console.log(leftrightspeed/20)
-    player.y+= leftrightspeed/20
+if(player.y < target.y){    
+    // console.log(leftrightspeed)
+    player.y+= updownspeed
+    currentpos.y = player.y
 }
 if(player.y > target.y){
-    console.log(leftrightspeed/20)
-    player.y-= leftrightspeed/20
+    // console.log(updownspeed)
+    player.y-= updownspeed
+    currentpos.y = player.y
 }
+
+tail(currentpos)
+
+c.beginPath()
+// c.moveTo(player.x,player.y)
+c.strokeStyle = 'white'
+c.fillStyle = 'rgba(255,255,255,0.2)'
+var tailRadius = player.width
+for(let i = player.tail.length -1; i>0; i--){
+    if(tailRadius > 0){
+        tailRadius -= 2
+    }
+    
+    c.arc(player.tail[i].x,player.tail[i].y,tailRadius,0, Math.PI*2)
+}
+c.fill()
+// c.beginPath()
+// c.moveTo(mouse.x,mouse.y)
+// c.lineTo(player.x,player.y)
+// c.stroke()
+
+
 
 }
 
 animate()
+
+
+function tail(obj){
+    player.tail.push(obj)
+
+    if(player.tail.length > 10){
+        player.tail.shift()    
+    }
+
+}
