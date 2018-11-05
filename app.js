@@ -31,7 +31,7 @@ function getMousePos(canvas, evt) {
       x: 0,
       y:0
   }
-
+//protagonist
   var player = {
     x: 500,
     y: 100,
@@ -43,9 +43,24 @@ function getMousePos(canvas, evt) {
     skill: undefined
 }
 
+function moveTo(item,target,speed){
+    if(item.x < target.x){
+        item.x+= Math.abs(item.x-target.x) / Math.sqrt(Math.pow(Math.abs(item.x-target.x),2)+Math.pow(Math.abs(item.y-target.y),2)) * speed
+    }
+    if(item.x > target.x){
+        item.x-= Math.abs(item.x-target.x) / Math.sqrt(Math.pow(Math.abs(item.x-target.x),2)+Math.pow(Math.abs(item.y-target.y),2)) * speed
+    }
+    if(item.y < target.y){
+        item.y+= Math.abs(item.y-target.y) / Math.sqrt(Math.pow(Math.abs(item.x-target.x),2)+Math.pow(Math.abs(item.y-target.y),2)) * speed
+    }
+    if(item.y > target.y){
+        item.y-= Math.abs(item.y-target.y) / Math.sqrt(Math.pow(Math.abs(item.x-target.x),2)+Math.pow(Math.abs(item.y-target.y),2)) * speed
+    }
+}
   var updownspeed = 1
   var leftrightspeed = 1
-  document.addEventListener('click', function(){
+  var mousedown = false
+  document.addEventListener('mousedown', function(){
       target.x = mouse.x;
       target.y = mouse.y;
       let a = Math.abs(player.x-target.x)
@@ -53,15 +68,23 @@ function getMousePos(canvas, evt) {
       let c = Math.sqrt(Math.pow(a,2)+Math.pow(b,2))
     leftrightspeed = (a/c) * player.speed
     updownspeed = (b/c) * player.speed
+    mousedown = true
   })
-
+  document.addEventListener('mouseup', function(){
+    mousedown = false
+  })
   document.addEventListener('mousemove', function(evt) {
     var mousePos = getMousePos(canvas, evt);
     mouse.x= mousePos.x; 
     mouse.y= mousePos.y;
+
+    if(mousedown == true){
+        target.x = mouse.x;
+        target.y = mouse.y;
+    }
+   
+
   }, false);
-
-
 document.addEventListener('keydown',function(e){
     if(e.keyCode == '32'){
         player.skill = 'charge'
@@ -75,6 +98,12 @@ document.addEventListener('keyup',function(e){
     }
 })
 
+var slicePath = {
+    start:{x: undefined, y:undefined},
+    end:{x: undefined, y:undefined},
+    opacity: 1,
+    shadowBlur: 20
+}
 
 function slicer(){
     if(player.skill == 'charge'){
@@ -99,11 +128,18 @@ function slicer(){
         c.restore()
     }
     if(player.skill == 'slice'){
+        
         let aa = Math.abs(player.x-mouse.x)
         let bb = Math.abs(player.y-mouse.y)
         let cc = Math.sqrt(Math.pow(aa,2)+Math.pow(bb,2))
         xspeed = (aa/cc) * cc
         yspeed = (bb/cc) * cc
+
+        slicePath.start.x = player.x
+        slicePath.start.y = player.y
+        slicePath.end.x = mouse.x
+        slicePath.end.y = mouse.y
+        // console.log(slicePath)
 
         if(player.x < mouse.x){
             // console.log(updownspeed)
@@ -121,12 +157,33 @@ function slicer(){
             // console.log(yspeed)
             player.y-= yspeed
         }
-        tail({x:player.x,y:player.y})
+        
+        slicePath.opacity = 1
         player.skill = undefined
         target.x = mouse.x;
         target.y = mouse.y;
         player.tail = []
     }
+}
+
+
+function afterImage(){
+    slicePath.opacity-=0.1
+    //hitbox
+    
+    //visible path
+    c.save()
+    c.lineWidth = 30
+    c.shadowColor = '#4cc3ff'
+    c.shadowBlur = 40
+    c.strokeStyle = `rgba(255,255,255,${slicePath.opacity-0.5})`
+    c.lineWidth = 8
+    c.strokeStyle = `rgba(255,255,255,${slicePath.opacity})`
+    c.beginPath()
+    c.moveTo(slicePath.end.x,slicePath.end.y)
+    c.lineTo(slicePath.start.x,slicePath.start.y)
+    c.stroke()
+    c.restore()
 }
 
 var zombie = {
@@ -143,19 +200,13 @@ requestAnimationFrame(animate);
 c.clearRect(0,0,window.innerWidth,window.innerHeight)
 
 
-// c.beginPath()
-// c.moveTo(mouse.x,mouse.y)
-// c.lineTo(player.x,player.y)
-// c.stroke()
 
 slicer()
-
-
-
+afterImage()
 
 c.fillStyle = "black"
-// console.log(player.x, player.y)
-// c.strokeRect(player.x,player.y,player.height,player.width)
+
+
 c.save()
 c.shadowColor = "#E3EAEF"
 c.shadowBlur = "20"
@@ -166,52 +217,22 @@ c.fillStyle = "white"
 c.stroke()
 c.fill()
 c.restore()
-c.fillStyle = "green"
+
+
+c.fillStyle = "red"
 c.fillRect(zombie.x,zombie.y,zombie.height,zombie.width)
-
-
-
-if(zombie.x < player.x){
-    zombie.x+= Math.abs(zombie.x-target.x) / Math.sqrt(Math.pow(Math.abs(zombie.x-target.x),2)+Math.pow(Math.abs(zombie.y-target.y),2)) * zombie.speed
-}
-if(zombie.x > player.x){
-    zombie.x-= Math.abs(zombie.x-target.x) / Math.sqrt(Math.pow(Math.abs(zombie.x-target.x),2)+Math.pow(Math.abs(zombie.y-target.y),2)) * zombie.speed
-}
-if(zombie.y < player.y){
-    zombie.y+= Math.abs(zombie.y-target.y) / Math.sqrt(Math.pow(Math.abs(zombie.x-target.x),2)+Math.pow(Math.abs(zombie.y-target.y),2)) * zombie.speed
-}
-if(zombie.y > player.y){
-    zombie.y-= Math.abs(zombie.y-target.y) / Math.sqrt(Math.pow(Math.abs(zombie.x-target.x),2)+Math.pow(Math.abs(zombie.y-target.y),2)) * zombie.speed
-}
+moveTo(zombie,player,zombie.speed)
 
 
 let currentpos = {x:undefined,y:undefined}
 
 
-if(player.x < target.x){
-    // console.log(updownspeed)
-    player.x += leftrightspeed
-    currentpos.x = player.x
-}
-if(player.x > target.x){
-    // console.log(leftrightspeed)
-    player.x-= leftrightspeed
-    currentpos.x = player.x
-}
-if(player.y < target.y){    
-    // console.log(leftrightspeed)
-    player.y+= updownspeed
-    currentpos.y = player.y
-}
-if(player.y > target.y){
-    // console.log(updownspeed)
-    player.y-= updownspeed
-    currentpos.y = player.y
-}
 
-function moveTo(item,target){
-    
-}
+moveTo(player,target,player.speed)
+currentpos.y = player.y
+currentpos.x = player.x
+
+
 
 tail(currentpos)
 
