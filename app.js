@@ -52,6 +52,13 @@ var player = {
     cooldown: 0
 }
 
+function tail(obj) {
+    player.tail.push(obj)
+    if (player.tail.length > 10) {
+        player.tail.shift()
+    }
+}
+
 function moveTo(item, target, speed) {
     if (item.x < target.x) {
         item.x += Math.abs(item.x - target.x) / Math.sqrt(Math.pow(Math.abs(item.x - target.x), 2) + Math.pow(Math.abs(item.y - target.y), 2)) * speed
@@ -247,7 +254,6 @@ function harmlessSpawner() {
     var zombie = new Zombie()
     harmless.push(zombie)
 }
-
 function zombieSpawner() {
     if (harmless.length > 0) {
         zombies.push(harmless[0])
@@ -263,13 +269,10 @@ function animate() {
         requestAnimationFrame(animate);
     } else {
         c.fillStyle = 'red'
-        // c.fillRect(0,0,window.innerWidth, window.innerHeight)
-        c.font = "80px Arial";
-        c.fillText(`You lost! \n your score is: ${player.score}`, 100, 500);
     }
-
     c.clearRect(0, 0, window.innerWidth, window.innerHeight)
 
+    c.fillStyle = 'rgba(255,255,255,0.5)';
     c.font = "30px Arial";
     c.fillText(`score: ${player.score}`, 10, 50);
     c.fillText(`level: ${player.level}`, 10, 90);
@@ -277,17 +280,12 @@ function animate() {
     slicer()
     afterImage()
 
-    c.fillStyle = "black"
-
-
     c.save()
     c.shadowColor = "#E3EAEF"
     c.shadowBlur = "20"
     c.beginPath()
     c.arc(player.x, player.y, player.radius, 0, 2 * Math.PI)
-    c.strokeStyle = "white";
     c.fillStyle = "white"
-    c.stroke()
     c.fill()
 
     if (player.cooldown > 0) {
@@ -309,32 +307,38 @@ function animate() {
         i.draw()
         moveTo(i, player, i.speed)
         if (Math.sqrt(Math.pow((i.x - player.x), 2) + Math.pow((i.y - player.y), 2)) - (player.radius + i.radius) < 0 && player.isInvulnerable == false) {
-
             console.log('ouch')
             player.life--
-            // alert('you lost')
-
-            // setTimeout(function(){
-            //     player.isInvulnerable == false
-            // },1000)
         }
     })
 
-
-
-
+    // pushes the last few steps into the tail arr
     let currentpos = {
         x: undefined,
         y: undefined
     }
 
-
-
     moveTo(player, clickTarget, player.speed)
     currentpos.y = player.y
     currentpos.x = player.x
 
+    tail(currentpos)
 
+    
+    c.beginPath()
+    c.strokeStyle = 'white'
+    c.fillStyle = 'rgba(255,255,255,0.2)'
+    var tailRadius = player.radius
+    for (let i = player.tail.length - 1; i > 0; i--) {
+        if (tailRadius > 0) {
+            tailRadius -= 2
+        }
+
+        c.arc(player.tail[i].x, player.tail[i].y, tailRadius, 0, Math.PI * 2)
+    }
+    c.fill()
+
+    // explosion animation if zombie gets sliced, refference in ressources/explosion.js
     if (explosionInner.length !== 0) {
         explosionInner.forEach(function (i, index) {
             i.update()
@@ -363,30 +367,6 @@ function animate() {
             }
         })
 
-
-    tail(currentpos)
-
-    c.beginPath()
-    c.strokeStyle = 'white'
-    c.fillStyle = 'rgba(255,255,255,0.2)'
-    var tailRadius = player.radius
-    for (let i = player.tail.length - 1; i > 0; i--) {
-        if (tailRadius > 0) {
-            tailRadius -= 2
-        }
-
-        c.arc(player.tail[i].x, player.tail[i].y, tailRadius, 0, Math.PI * 2)
-    }
-    c.fill()
 }
 
 animate()
-
-function tail(obj) {
-    player.tail.push(obj)
-
-    if (player.tail.length > 10) {
-        player.tail.shift()
-    }
-
-}
