@@ -222,7 +222,7 @@ function Zombie() {
     this.speed = Math.random() + 1.5;
 }
 
-Zombie.prototype.draw = function () {
+Zombie.prototype.draw = function (){
     c.beginPath()
     c.arc(this.x, this.y, this.radius, 0, Math.PI * 2)
     c.fill()
@@ -233,16 +233,6 @@ Zombie.prototype.draw = function () {
 
 var harmless = []
 var zombies = []
-var particles = []
-
-Zombie.prototype.burst = function (xVelocity, yVelocity) {
-    this.radius -= 40
-    for (let i = 0; i < 200; i++) {
-        var plusOrMinus = Math.random() < 0.5 ? -1 : 1;
-
-        particles.push(new Particle(this.x, this.y, xVelocity + Math.random() - 0.5 * 5, yVelocity + Math.random() - 0.5 * 5))
-    }
-}
 
 var spawnRate = 2000
 var spawnZomibe = window.setInterval(zombieSpawner, spawnRate);
