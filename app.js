@@ -33,47 +33,48 @@ var mouse = {
     y: 0
 }
 
-var target = {
-    x: canvas.width /2,
-    y: canvas.height /2
+var clickTarget = {
+    x: 0,
+    y: 0
 }
-
 //protagonist
 var player = {
-    x: canvas.width /2,
-    y: canvas.height /2,
+    x: 500,
+    y: 100,
     radius: 40,
     life: 9,
     speed: 20,
     tail: [],
     skill: undefined,
+    isInvulnerable: false,
     score: 0,
     level: 1,
     cooldown: 0
 }
 
-function moveTo(item, moveTarget, speed) {
-    if (item.x < moveTarget.x) {
-        item.x += Math.abs(item.x - moveTarget.x) / Math.sqrt(Math.pow(Math.abs(item.x - moveTarget.x), 2) + Math.pow(Math.abs(item.y - moveTarget.y), 2)) * speed
+function moveTo(item, target, speed) {
+    if (item.x < target.x) {
+        item.x += Math.abs(item.x - target.x) / Math.sqrt(Math.pow(Math.abs(item.x - target.x), 2) + Math.pow(Math.abs(item.y - target.y), 2)) * speed
     }
-    if (item.x > moveTarget.x) {
-        item.x -= Math.abs(item.x - moveTarget.x) / Math.sqrt(Math.pow(Math.abs(item.x - moveTarget.x), 2) + Math.pow(Math.abs(item.y - moveTarget.y), 2)) * speed
+    if (item.x > target.x) {
+        item.x -= Math.abs(item.x - target.x) / Math.sqrt(Math.pow(Math.abs(item.x - target.x), 2) + Math.pow(Math.abs(item.y - target.y), 2)) * speed
     }
-    if (item.y < moveTarget.y) {
-        item.y += Math.abs(item.y - moveTarget.y) / Math.sqrt(Math.pow(Math.abs(item.x - moveTarget.x), 2) + Math.pow(Math.abs(item.y - moveTarget.y), 2)) * speed
+    if (item.y < target.y) {
+        item.y += Math.abs(item.y - target.y) / Math.sqrt(Math.pow(Math.abs(item.x - target.x), 2) + Math.pow(Math.abs(item.y - target.y), 2)) * speed
     }
-    if (item.y > moveTarget.y) {
-        item.y -= Math.abs(item.y - moveTarget.y) / Math.sqrt(Math.pow(Math.abs(item.x - moveTarget.x), 2) + Math.pow(Math.abs(item.y - moveTarget.y), 2)) * speed
+    if (item.y > target.y) {
+        item.y -= Math.abs(item.y - target.y) / Math.sqrt(Math.pow(Math.abs(item.x - target.x), 2) + Math.pow(Math.abs(item.y - target.y), 2)) * speed
     }
 }
 var updownspeed = 1
 var leftrightspeed = 1
+//player moves on mousedown to make the game feel more snappy
 var mousedown = false
 document.addEventListener('mousedown', function () {
-    target.x = mouse.x;
-    target.y = mouse.y;
-    let a = Math.abs(player.x - target.x)
-    let b = Math.abs(player.y - target.y)
+    clickTarget.x = mouse.x;
+    clickTarget.y = mouse.y;
+    let a = Math.abs(player.x - clickTarget.x)
+    let b = Math.abs(player.y - clickTarget.y)
     let c = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2))
 
     leftrightspeed = (a / c) * player.speed
@@ -89,19 +90,17 @@ document.addEventListener('mousemove', function (evt) {
     var mousePos = getMousePos(canvas, evt);
     mouse.x = mousePos.x;
     mouse.y = mousePos.y;
-
     if (mousedown == true) {
-        target.x = mouse.x;
-        target.y = mouse.y;
+        clickTarget.x = mouse.x;
+        clickTarget.y = mouse.y;
     }
 }, false);
 
-var zombieIsSliced = false
+//slice skill (space key)
 document.addEventListener('keydown', function (e) {
     if (e.keyCode == '32' && player.cooldown == 0) {
         player.skill = 'charge'
     }
-    zombieIsSliced = true
 })
 document.addEventListener('keyup', function (e) {
     if (e.keyCode == '32' && player.cooldown == 0) {
@@ -121,8 +120,6 @@ var slicePath = {
     opacity: 1,
     shadowBlur: 20
 }
-
-var hitbox = []
 
 function slicer() {
     if (player.skill == 'charge') {
@@ -148,11 +145,11 @@ function slicer() {
     }
     if (player.skill == 'slice') {
         player.cooldown += 1000
-        let aa = Math.abs(player.x - mouse.x)
-        let bb = Math.abs(player.y - mouse.y)
-        let cc = Math.sqrt(Math.pow(aa, 2) + Math.pow(bb, 2))
-        xspeed = (aa / cc) * cc
-        yspeed = (bb / cc) * cc
+        let dx = Math.abs(player.x - mouse.x)
+        let dy = Math.abs(player.y - mouse.y)
+        let distance = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2))
+        xspeed = (dx / distance) * distance
+        yspeed = (dy / distance) * distance
 
         slicePath.start.x = player.x
         slicePath.start.y = player.y
@@ -166,32 +163,25 @@ function slicer() {
             yspeed *= -1
         }
 
+        //can't slice in place which leads to buggs
         if (slicePath.start.x !== slicePath.end.x && slicePath.start.y !== slicePath.end.y) {
             player.x += xspeed
             player.y += yspeed
         }
 
-
         slicePath.opacity = 1
         player.skill = undefined
-        target.x = mouse.x;
-        target.y = mouse.y;
+        clickTarget.x = mouse.x;
+        clickTarget.y = mouse.y;
         player.tail = []
 
-
-        for (i of zombies) {
-            // i.burst(xspeed/100, yspeed/100)
-            i.xlinespeed = (xspeed / cc) * i.radius
-            i.ylinespeed = (yspeed / cc) * i.radius
-        }
-
-        for (i = 0; i < cc; i += 10) {
-            let tempX = slicePath.start.x + (xspeed / cc) * i
-            let tempY = slicePath.start.y + (yspeed / cc) * i
+        //sets points that act like a hitbox
+        for (i = 0; i < distance; i += 10) {
+            let tempX = slicePath.start.x + (xspeed / distance) * i
+            let tempY = slicePath.start.y + (yspeed / distance) * i
 
             zombies.forEach(function (j, index) {
                 var state = false
-
 
                 if (Math.sqrt(Math.pow(j.x - tempX, 2) + Math.pow(j.y - tempY, 2)) - (40 + j.radius) <= 0) {
                     state = true
@@ -200,28 +190,18 @@ function slicer() {
                     player.cooldown -= 100
                 }
 
-
                 if (state == true) {
                     zombies.splice(index, 1)
                 }
-
             })
-
         }
-        hitbox = []
     }
 }
 
-function HitboxArc(x, y) {
-    this.x = x;
-    this.y = y;
-    this.radius = 40;
-}
 
 function afterImage() {
     slicePath.opacity -= 0.1
 
-    //visible path
     c.save()
     c.lineWidth = 30
     c.shadowColor = '#4cc3ff'
@@ -238,14 +218,8 @@ function afterImage() {
 function Zombie() {
     this.x = Math.floor(Math.random() * (window.innerWidth - 0 + 1)) + 0;
     this.y = Math.floor(Math.random() * (window.innerHeight - 0 + 1)) + 0;
-    this.width = 40;
-    this.height = 40;
     this.radius = 40;
     this.speed = Math.random() + 1.5;
-    this.color = 'red';
-    this.opacity = 1;
-    this.xlinespeed;
-    this.ylinespeed;
 }
 
 Zombie.prototype.draw = function () {
@@ -344,7 +318,7 @@ function animate() {
     zombies.forEach(function (i, index) {
         i.draw()
         moveTo(i, player, i.speed)
-        if (Math.sqrt(Math.pow((i.x - player.x), 2) + Math.pow((i.y - player.y), 2)) - (player.radius + i.width) < 0 && player.isInvulnerable == false) {
+        if (Math.sqrt(Math.pow((i.x - player.x), 2) + Math.pow((i.y - player.y), 2)) - (player.radius + i.radius) < 0 && player.isInvulnerable == false) {
 
             console.log('ouch')
             player.life--
@@ -366,7 +340,7 @@ function animate() {
 
 
 
-    moveTo(player, target, player.speed)
+    moveTo(player, clickTarget, player.speed)
     currentpos.y = player.y
     currentpos.x = player.x
 
