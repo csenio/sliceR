@@ -196,7 +196,7 @@ function slicer() {
                     player.score++
                     player.cooldown -= 100
                     if(player.cooldown < 0){
-                        player.cooldown =0
+                        player.cooldown =0  
                     }
                 }
 
