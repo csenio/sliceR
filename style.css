@@ -1,6 +1,31 @@
+@font-face {
+  font-family: "moon";
+  src: url("./public/fonts/MOON2/Moon2.0-Regular.otf");
+}
+
 * {
   padding: 0;
   margin: 0;
+}
+
+.logo {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+ul {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.logo img {
+  width: 40%;
 }
 
 canvas {
@@ -11,8 +36,29 @@ canvas {
 
 body {
   display: flex;
-  height: 100%;
+  height: 100vh;
   width: 100%;
   justify-content: center;
   align-items: center;
+  background: #061121;
+}
+
+ul li {
+  list-style-type: none;
+  margin: 15px 0;
+}
+
+a {
+  border: 1px solid white;
+  background: rgba(255, 255, 255, 0.219);
+  padding: 7px 9px;
+  border-radius: 3px;
+  text-decoration: none;
+  font-family: "moon";
+  color: white;
+  font-size: 1.2em;
+}
+
+a:hover {
+  background: rgba(255, 255, 255, 0.35);
 }
