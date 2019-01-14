@@ -1,19 +1,18 @@
-
-*{
-    padding:0;
-    margin:0;
+* {
+  padding: 0;
+  margin: 0;
 }
 
-canvas{
-    /* border: 1px solid red; */
-    /* background: #0a182d; */
-    background: #061121;
+canvas {
+  /* border: 1px solid red; */
+  /* background: #0a182d; */
+  background: #061121;
 }
 
-body{
-    display: flex;
-    height: 100%;
-    width: 100%;
-    justify-content: center;
-    align-items: center;
+body {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
 }
