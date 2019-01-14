@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>losing screen</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="lostContent">
+      <h1>You Lost!</h1>
+      <p>you made it to lvl: <span class="level blue"></span></p>
+      <p>your score is: <span class="score blue"></span></p>
+      <a href="/game.html">play again!</a>
+      <a href="/index.html">back to home</a>
+    </div>
+
+    <script>
+      var level = window.location.search
+        .substring(1)
+        .split("&")[0]
+        .split("=")[1];
+      var score = window.location.search
+        .substring(1)
+        .split("&")[1]
+        .split("=")[1];
+
+      document.querySelector(".score").innerHTML = score;
+      document.querySelector(".level").innerHTML = level;
+      //   alert(level);
+      //   alert(score);
+    </script>
+  </body>
+</html>
